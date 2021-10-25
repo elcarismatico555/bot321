@@ -178,22 +178,27 @@ async def calcula(ctx,operacion):
 #-CACHIPUN-----------------------------------------------------
 @bot.command()
 async def cachipun(ctx,tirada1):
-    respuestas = ["piedra","piedra","papel","papel","tijera","tijeras"]
-    tirbot = (choice(respuestas))
+    respuestas = ["piedra","papel","tijera"]
+    tirbot = choice(respuestas)
     tirada1 = tirada1.lower()
 
-    if tirada1 in respuestas:
-        
-        await ctx.send(tirbot)
-        if tirada1 == tirbot:
-            await ctx.send("Empate")
-    
-        elif tirada1 == "piedra" and tirbot == "papel" or tirada1 == "papel"and tirbot == "tijera" or tirada1 == "papel" and tirbot == "tijeras" or tirada1 == "tijera" and tirbot == "piedra" or tirada1 == "tijeras" and tirbot == "piedra":
-            await ctx.send("EZZ")
+    if bool(tirada1) == True:
+        if tirada1 == "tijeras":
+            tirada1 = "tijera"
+
+        if tirada1 in respuestas:
+            await ctx.send(tirbot)
+
+            if tirada1 == tirbot:
+                await ctx.send("Empate")    
+            elif tirada1 == "piedra" and tirbot == "papel" or tirada1 == "papel"and tirbot == "tijera" or tirada1 == "tijera" and tirbot == "piedra":
+                await ctx.send("jaja izi")
+            else:
+                await ctx.send("me falta practica :(")
         else:
-            await ctx.send("me falta practica :(")
+            await ctx.send("parece que no sabes jugar XD")
     else:
-        await ctx.send("parece que no sabes jugar XD")
+        await ctx.send("falto tu jugada")
 
 #  FUNCION BUSQUEDA DE GOOGLE
 
