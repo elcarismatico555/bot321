@@ -280,15 +280,15 @@ async def clima(ctx,consulta):
 @bot.command()
 async def ayuda(ctx):
     await ctx.send("""```Todos los comandos con ejemplos
-    \nc!suma "1 1"
-    \nc!resta "5 2"
-    \nc!multiplica "3 5"
-    \nc!divide "10 2"
-    \nc!eleva "2 3"
-    \nc!calcula "10/3" (este comando detecta el simbolo)
-    \nc!cachipun "piedra"  (el legendario juego de piedra papel o tijera)
-    \nc!hash "hola que tal 123" (genera un hash con el algoritmo sha256 en base a lo que ingresaste)
-    \nc!busca "palabra o frase"  (proximamente)
-    \nc!clima "santiago" (funcionalidad suspendida)```""")
+    c!suma "1 1"
+    c!resta "5 2"
+    c!multiplica "3 5"
+    c!divide "10 2"
+    c!eleva "2 3"
+    c!calcula "10/3" (este comando detecta el simbolo)
+    c!cachipun "piedra"  (el legendario juego de piedra papel o tijera)
+    c!hash "hola que tal 123" (genera un hash con el algoritmo sha256 en base a lo que ingresaste)
+    c!busca "palabra o frase"  (proximamente)
+    c!clima "santiago" (funcionalidad suspendida)```""")
 
 bot.run(TOKEN)
