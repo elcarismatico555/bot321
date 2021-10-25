@@ -1,6 +1,9 @@
-import hashlib
+from hashlib import sha256
 from logging import exception
 from random import choice
+from discord import client
+import discord
+from discord.client import Client
 from discord.ext import commands
 from discord.ext.commands.errors import PrivateMessageOnly
 from dotenv import load_dotenv
@@ -9,7 +12,7 @@ import os
 
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
-bot=commands.Bot(command_prefix = '!')
+bot=commands.Bot(command_prefix = 'c!')
 
 #  variables globales
 primer_numero = []
@@ -17,6 +20,16 @@ signo = ""
 segundo_numero = []
 var1 = 0
 var2 = 0
+
+#  Estado del bot
+
+@bot.event
+async def on_ready():
+    #personalizado = discord.CustomActivity("Soy un pez")
+    await bot.change_presence(activity=discord.Game(name="Ser un pez"))
+    print("bot esta listo")
+
+
 
 #  comprobacion tipo de resultado en operacion matematica
 def comprobacion_numero(resultado):
@@ -29,7 +42,8 @@ def comprobacion_numero(resultado):
             decimal = True
     return decimal
 
-#-------------------------------------------------------
+
+
 #  OPERACIONES MATEMATICAS--------------------
 @bot.command()
 async def suma(ctx,num1,num2):
@@ -59,6 +73,14 @@ async def divide(ctx,num1,num2):
         resp = int(resp)
     await ctx.send(resp)
 
+@bot.command()
+async def eleva(ctx,num1,num2):
+    resp = float(num1) ** float(num2)
+    if comprobacion_numero(resp) == False:
+        resp = int(resp)
+    await ctx.send(resp)
+
+
 #  calculo con deteccion de signo--------------
 @bot.command()
 async def calcula(ctx,operacion):
@@ -70,7 +92,7 @@ async def calcula(ctx,operacion):
     global segundo_numero
     p = "abierto"
     numeros = [0,1,2,3,4,5,6,7,8,9]
-    signos = ["+","-","*","/","÷"]
+    signos = ["+","-","*","/","÷","**","^"]
     puntuacion = [".",","]
     operacion = str(operacion)
     operacion = list(operacion)
@@ -89,7 +111,7 @@ async def calcula(ctx,operacion):
     print(segundo_numero)
     var1 = "".join(primer_numero)
 
-    #  borrar valores de variable primero_numero
+    #  borrar valores de variable primer_numero
     primer_numero = str(primer_numero)
     primer_numero = ""
     primer_numero = list(primer_numero)
@@ -103,25 +125,32 @@ async def calcula(ctx,operacion):
     segundo_numero = list(segundo_numero)
 
     #  --------------borrado de valores variable
-
     var1 = float(var1)
     var2 = float(var2)
+
+    #  SUMA
     if signo == "+":
         respuesta = var1 + var2
         if comprobacion_numero(respuesta) == False:
             respuesta = int(respuesta)
             print(respuesta)
         await ctx.send(respuesta)
+
+    #  RESTA
     elif signo == "-":
         respuesta = var1 - var2
         if comprobacion_numero(respuesta) == False:
             respuesta = int(respuesta)
         await ctx.send(respuesta)
+
+    #  MULTIPLICA
     elif signo == "*":
         respuesta = var1 * var2
         if comprobacion_numero(respuesta) == False:
             respuesta = int(respuesta)
         await ctx.send(respuesta)
+
+    #  DIVIDE
     elif signo == "/" or signo == "÷":
         try:
             respuesta = var1 / var2
@@ -132,9 +161,18 @@ async def calcula(ctx,operacion):
             if comprobacion_numero(respuesta) == False:
                 respuesta = int(respuesta)
             await ctx.send(respuesta)
-        #  reset var
-        var1 = ""
-        var2 = ""
+
+    #  ELEVA
+    elif signo == "**" or signo == "^":
+        respuesta = var1 ** var2
+        if comprobacion_numero(respuesta) == False:
+            respuesta = int(respuesta)
+        await ctx.send(respuesta)
+
+
+    #  reset var
+    var1 = ""
+    var2 = ""
 
 
 #-CACHIPUN-----------------------------------------------------
@@ -150,7 +188,7 @@ async def cachipun(ctx,tirada1):
         if tirada1 == tirbot:
             await ctx.send("Empate")
     
-        elif tirada1 == "piedra" and tirbot == "papel" or tirada1 == "papel" and tirbot == "tijera" or tirada1 == "papel" and tirbot == "tijeras" or tirada1 == "tijera" and tirbot == "piedra" or tirada1 == "tijeras" and tirbot == "piedra":
+        elif tirada1 == "piedra" and tirbot == "papel" or tirada1 == "papel"and tirbot == "tijera" or tirada1 == "papel" and tirbot == "tijeras" or tirada1 == "tijera" and tirbot == "piedra" or tirada1 == "tijeras" and tirbot == "piedra":
             await ctx.send("EZZ")
         else:
             await ctx.send("me falta practica :(")
@@ -160,13 +198,17 @@ async def cachipun(ctx,tirada1):
 #  FUNCION BUSQUEDA DE GOOGLE
 
 @bot.command()
+async def busca(ctx,):
+    await ctx.send("funcionalidad en desarrollo")
+
+"""@bot.command()
 async def busca(ctx,*args):
     params = {"search?q" : ""}
     palabra_o_frase = []
     for n in args:
         palabra_o_frase.append(n)
 
-    if len(palabra_o_frase) == 0:
+    if bool(palabra_o_frase) == False:
         await ctx.send("escribe lo que quieres buscar, frase o palabra")
     else:
         try:
@@ -183,21 +225,29 @@ async def busca(ctx,*args):
 
     #website = "https://www.google.com"
     #resultado = requests.get("https://www.google.com/",params=params)
-    #print(resultado)
-    await ctx.send("Funcionalidad en desarrollo")
+    #print(resultado)"""
 
-
-#  Generador de hash
+#  Generador_de_hash
 
 @bot.command()
-async def hash(ctx,algoritmo,word):
-    if bool(algoritmo) == False:
-        algoritmo = "1"
-    elif bool(word) == False:
-        word = "hola"
-    
-    await ctx.send
+async def hash(ctx, *args):
+    entrada = []
 
+    for n in args:
+        entrada.append(n)
+        word = " ".join(entrada)
+    print(word)
+
+    if bool(word) == False:
+        await ctx.send("64 caracteres maximo")
+    
+    elif len(word) > 64:
+        await ctx.send("64 caracteres maximo")
+
+    else:
+        word = word.encode()
+        objeto_hash = sha256(word).hexdigest()
+        await ctx.send(f"El hash resultante es: {objeto_hash}")
 
 
 #-CONSULTA DEL CLIMA------------------------------------
@@ -226,15 +276,19 @@ async def clima(ctx,consulta):
     #await ctx.send("Pais: "+pais+"\nRegion: "+region+"\nHora: "+hora+"\nTemperatura: "+grados+"°C\nHumedad: "+humedad+"%"+"\nViento: "+wind+"Km/h")
 #-----------------------------------------CONSULTA DEL CLIMA
 #COMANDO DE AYUDA-------------------------------------------
+
 @bot.command()
-async def ayuda(ctx,):
+async def ayuda(ctx):
     await ctx.send("""```Todos los comandos con ejemplos
-    \n!suma 1 1
-    \n!resta 5 2
-    \n!multiplica 3 5
-    \n!divide 10 2
-    \n!calcula 10+3 (este comando detecta el simbolo)
-    \n!cachipun piedra  (el legendario juego de piedra papel o tijera)
-    \n!busca palabra o frase a buscar  (proximamente)
-    \n!clima santiago (funcionalidad suspendida)```""")
+    \nc!suma "1 1"
+    \nc!resta "5 2"
+    \nc!multiplica "3 5"
+    \nc!divide "10 2"
+    \nc!eleva "2 3"
+    \nc!calcula "10/3" (este comando detecta el simbolo)
+    \nc!cachipun "piedra"  (el legendario juego de piedra papel o tijera)
+    \nc!hash "hola que tal 123" (genera un hash con el algoritmo sha256 en base a lo que ingresaste)
+    \nc!busca "palabra o frase"  (proximamente)
+    \nc!clima "santiago" (funcionalidad suspendida)```""")
+
 bot.run(TOKEN)
