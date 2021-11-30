@@ -1,18 +1,20 @@
+from bs4 import BeautifulSoup
 from hashlib import sha256
-from logging import exception
 from random import choice
-from discord import client
 import discord
-from discord.client import Client
 from discord.ext import commands
-from discord.ext.commands.errors import PrivateMessageOnly
 from dotenv import load_dotenv
 import os
+import requests
+
+
+if __name__ != "__main__":
+    exit()
 
 
 load_dotenv()
-TOKEN = os.getenv('DISCORD_TOKEN')
-bot=commands.Bot(command_prefix = 'c!')
+TOKEN = os.getenv("DISCORD_TOKEN")
+bot=commands.Bot(command_prefix = "c!")
 
 #  variables globales
 primer_numero = []
@@ -31,7 +33,8 @@ async def on_ready():
 
 
 
-#  comprobacion tipo de resultado en operacion matematica
+#  comprueba si el resultado de cualquier operacion termina en decimal
+
 def comprobacion_numero(resultado):
     resultado = str(resultado)
     decimal = False
@@ -44,7 +47,7 @@ def comprobacion_numero(resultado):
 
 
 
-#  OPERACIONES MATEMATICAS--------------------
+#  OPERACIONES MATEMATICAS
 @bot.command()
 async def suma(ctx,num1,num2):
     resp = float(num1) + float(num2)
@@ -81,7 +84,8 @@ async def eleva(ctx,num1,num2):
     await ctx.send(resp)
 
 
-#  calculo con deteccion de signo--------------
+#  calculo con deteccion de signo
+
 @bot.command()
 async def calcula(ctx,operacion):
     calculo_error = False
@@ -111,22 +115,25 @@ async def calcula(ctx,operacion):
     print(segundo_numero)
     var1 = "".join(primer_numero)
 
-    #  borrar valores de variable primer_numero
+    #  borrar valores de variable primer_numero y segundo_numero
     primer_numero = str(primer_numero)
     primer_numero = ""
-    primer_numero = list(primer_numero)
+    primer_numero = list(primer_numero)   #  lo hice de esta forma ya que la funcion top es demaciado lenta
 
-    #  -----------------borrar valores de variable primer_numero
     var2 = "".join(segundo_numero)
 
-    #  borrado de valores variable segundo_numero
     segundo_numero = str(segundo_numero)
     segundo_numero = ""
     segundo_numero = list(segundo_numero)
 
-    #  --------------borrado de valores variable
+
+    #  variables ready
+
     var1 = float(var1)
     var2 = float(var2)
+
+
+
 
     #  SUMA
     if signo == "+":
@@ -175,7 +182,7 @@ async def calcula(ctx,operacion):
     var2 = ""
 
 
-#-CACHIPUN-----------------------------------------------------
+#  Al cachipun
 @bot.command()
 async def cachipun(ctx,tirada1):
     respuestas = ["piedra","papel","tijera"]
@@ -200,39 +207,28 @@ async def cachipun(ctx,tirada1):
     else:
         await ctx.send("falto tu jugada")
 
-#  FUNCION BUSQUEDA DE GOOGLE
+
+
+#   BUSQUEDA DE GOOGLE
 
 @bot.command()
-async def busca(ctx,):
+async def busca(ctx,*args):
     await ctx.send("funcionalidad en desarrollo")
 
-"""@bot.command()
-async def busca(ctx,*args):
-    params = {"search?q" : ""}
-    palabra_o_frase = []
-    for n in args:
-        palabra_o_frase.append(n)
+    headers = {
+        "User-agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:94.0) Gecko/20100101 Firefox/94.0"
+        }
 
-    if bool(palabra_o_frase) == False:
-        await ctx.send("escribe lo que quieres buscar, frase o palabra")
-    else:
-        try:
-            texto_a_buscar = "+".join(palabra_o_frase)
-        except exception:
-            pass
-    str(texto_a_buscar)
-    print(type(texto_a_buscar))
-    for key, value in params.items():
-        if key == "search?q":
-            params[key] = texto_a_buscar
+    resultado = requests.get(f"https://www.google.com/{args}",headers=headers)
+    resultado_en_texto = resultado.text
+    soup = BeautifulSoup(resultado_en_texto,"lxml")
+    #campo_informacion = soup.find("")
+    #print(campo_informacion)
 
-    print(params)
 
-    #website = "https://www.google.com"
-    #resultado = requests.get("https://www.google.com/",params=params)
-    #print(resultado)"""
 
-#  Generador_de_hash
+
+#  Generador de hash
 
 @bot.command()
 async def hash(ctx, *args):
@@ -255,36 +251,141 @@ async def hash(ctx, *args):
         await ctx.send(f"El hash resultante es: {objeto_hash}")
 
 
-#-CONSULTA DEL CLIMA------------------------------------
+#  Analizador de url
+
+@bot.command()
+async def scanurl(ctx, link):
+    respuesta = requests.get(f"https://urlvoid.com/scan/{link}")
+    resultado_html = respuesta.text
+
+    soup = BeautifulSoup(resultado_html,"lxml")
+    campo_informacion1 = soup.find("tbody")
+
+    labels_tr = []
+    for i in campo_informacion1.find_all("tr",limit=8):
+        labels_tr.append(i)
+
+    tr1 = labels_tr[0]
+    tr2 = labels_tr[1]  #  unused
+    tr3 = labels_tr[2]
+    tr4 = labels_tr[3]
+    tr5 = labels_tr[4]  #  unused
+    tr6 = labels_tr[5]
+    tr7 = labels_tr[6]
+    tr8 = labels_tr[7]
+
+    info1 = tr1.find("strong").get_text()   #  direccion web
+    info2 = tr3.find("span", class_="label label-success").get_text()   #  encontrado en 0 de 44 listas negras
+
+    #  conseguir label adecuado
+    td = 0
+    for i in tr4.find_all("td"):
+        td += 1
+        if td == 2:
+            tr4 = i  #  segunda etiqueta td conseguida
+    
+
+    tr4 = str(tr4)
+    info3 = tr4.replace("<td>","")
+    info3 = info3.replace("</td>","")   #  fecha de registro de dominio
+
+    info4 = tr6.find("strong").get_text()   #  IP de dns
+
+    #  conseguir label adecuado
+    td = 0
+    for i in tr7.find_all("td"):
+        td += 1
+        if td == 2:
+            tr7 = i
+    tr7 = str(tr7)
+    info5 = tr7.replace("<td>","")
+    info5 = info5.replace("</td>","")   #  Nombre DNS
+
+    #  conseguir label adecuado
+    td = 0
+    for i in tr8.find_all("td"):
+        td += 1
+        if td == 2:
+            tr8 = i
+
+    info6 = tr8.find("a").get_text()    #  Numero sistema autónomo
+
+    nombreASN = []
+    tr8 = str(tr8)
+    contador = 0
+    for i in tr8:
+        if i == " ":
+            contador += 1
+        print(contador)
+        if contador >= 6:
+            nombreASN.append(i)
+            print(nombreASN)
+
+    info6_1 = "".join(nombreASN)
+    info6_1 = info6_1.replace("</td>","")     #  nombre sistema autónomo
+
+    await ctx.send("Web: "+info1+"\n"
+    "Encontrado en listas negras: "+info2+"\n"
+    "Registro de dominio: "+info3+"\n"
+    "Ip dns: "+info4+"\n"
+    "Dns inverso: "+info5+"\n"
+    "Numero sistema autónomo: "+info6+"\n"
+    "Nombre sistema autónomo: "+info6_1)
+
+    print(info1,info2,info3,info4,info5,info6,info6_1)
+
+#  Traductor
+@bot.command()
+async def traduce(ctx,*args):
+
+    headers = {
+        "User-agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:94.0) Gecko/20100101 Firefox/94.0"
+        }
+
+    resultado_html = requests.get(f"https://www.google.com/search?q=traducir+{args}+a+ingles",headers=headers)
+    resultado = resultado_html.text
+    soup = BeautifulSoup(resultado,"lxml")
+    
+    cuadro_de_traduccion = soup.find( "pre",id="tw-target-text")
+    print(cuadro_de_traduccion)
+    texto_traducido = cuadro_de_traduccion.find("span",class_="Y2IQFc").get_text()
+    print(texto_traducido)
+    await ctx.send(f"```{texto_traducido}```")
+
+
+#  API Clima
 @bot.command()
 async def clima(ctx,consulta):
     consulta = consulta.lower()
     await ctx.send("Lo sentimos esta opcion esta fuera de servicio :(")
+"""
+    access_key = ""
+    params = {'access_key':"" ,"query": "Santiago",}
 
-    #access_key = ""
-    #params = {'access_key':"" ,"query": "Santiago",}
+    for key, value in params.items():
+        if key == "query":
+            params[key] = consulta
 
-    #for key, value in params.items():
-    #    if key == "query":
-    #        params[key] = consulta
+    await ctx.send("Retraso aprox 10 segundos")
+    api_result = requests.get("http://api.weatherstack.com/current", params=params)
+    api_response = api_result.json()
 
-    #await ctx.send("Retraso aprox 10 segundos")
-    #api_result = requests.get("http://api.weatherstack.com/current", params=params)
-    #api_response = api_result.json()
+    pais = api_response["location"]["country"]
+    region = api_response["location"]["region"]
+    hora = api_response["location"]["localtime"]
+    grados = str(api_response["current"]["temperature"])
+    humedad = str(api_response["current"]["humidity"])
+    wind = str(api_response["current"]["wind_speed"])
+    await ctx.send("Pais: "+pais+"\nRegion: "+region+"\nHora: "+hora+"\nTemperatura: "+grados+"°C\nHumedad: "+humedad+"%"+"\nViento: "+wind+"Km/h")
+"""
 
-    #pais = api_response["location"]["country"]
-    #region = api_response["location"]["region"]
-    #hora = api_response["location"]["localtime"]
-    #grados = str(api_response["current"]["temperature"])
-    #humedad = str(api_response["current"]["humidity"])
-    #wind = str(api_response["current"]["wind_speed"])
-    #await ctx.send("Pais: "+pais+"\nRegion: "+region+"\nHora: "+hora+"\nTemperatura: "+grados+"°C\nHumedad: "+humedad+"%"+"\nViento: "+wind+"Km/h")
-#-----------------------------------------CONSULTA DEL CLIMA
-#COMANDO DE AYUDA-------------------------------------------
+#  COMANDO AYUDA
 
 @bot.command()
 async def ayuda(ctx):
-    await ctx.send("""```Todos los comandos con ejemplos
+    await ctx.send("""```
+    Todos los comandos con ejemplos
+
     c!suma "1 1"
     c!resta "5 2"
     c!multiplica "3 5"
@@ -292,7 +393,9 @@ async def ayuda(ctx):
     c!eleva "2 3"
     c!calcula "10/3" (este comando detecta el simbolo)
     c!cachipun "piedra"  (el legendario juego de piedra papel o tijera)
-    c!hash "hola que tal 123" (genera un hash con el algoritmo sha256 en base a lo que ingresaste)
+    c!hash "hola que tal 123" (genera un hash sha256 en base a lo que ingresaste)
+    c!scanurl "netflix.com" (informacion sobre el enlace)
+    c!traduce "hola buenas mañanas" (traduce tu texto a ingles, proximamente mas idiomas)
     c!busca "palabra o frase"  (proximamente)
     c!clima "santiago" (funcionalidad suspendida)```""")
 
