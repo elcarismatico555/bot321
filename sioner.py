@@ -1,3 +1,6 @@
+import time
+from discord import message
+first = time.time()
 from bs4 import BeautifulSoup
 from hashlib import sha256
 from random import choice
@@ -22,18 +25,19 @@ signo = ""
 segundo_numero = []
 var1 = 0
 var2 = 0
+cuenteo_errores = 0
+
 
 #  Estado del bot
 
 @bot.event
 async def on_ready():
     #personalizado = discord.CustomActivity("Soy un pez")
-    await bot.change_presence(activity=discord.Game(name="Ser un pez"))
+    await bot.change_presence(activity=discord.Game(name="c!ayuda"))
     print("bot esta listo")
 
 
-
-#  comprueba si el resultado de cualquier operacion termina en decimal
+#  comprueba si el resultado de cualquier operacion es un decimal
 
 def comprobacion_numero(resultado):
     resultado = str(resultado)
@@ -44,45 +48,6 @@ def comprobacion_numero(resultado):
         else:
             decimal = True
     return decimal
-
-
-
-#  OPERACIONES MATEMATICAS
-@bot.command()
-async def suma(ctx,num1,num2):
-    resp = float(num1) + float(num2)
-    if comprobacion_numero(resp) == False:
-        resp = int(resp)
-    await ctx.send(resp)
-
-@bot.command()
-async def multiplica(ctx,num1,num2):
-    resp = float(num1) * float(num2)
-    if comprobacion_numero(resp) == False:
-        resp = int(resp)
-    await ctx.send(resp)
-
-@bot.command()
-async def resta(ctx,num1,num2):
-    resp = float(num1) - float(num2)
-    if comprobacion_numero(resp) == False:
-        resp = int(resp)
-    await ctx.send(resp)
-
-@bot.command()
-async def divide(ctx,num1,num2):
-    resp = float(num1) / float(num2)
-    if comprobacion_numero(resp) == False:
-        resp = int(resp)
-    await ctx.send(resp)
-
-@bot.command()
-async def eleva(ctx,num1,num2):
-    resp = float(num1) ** float(num2)
-    if comprobacion_numero(resp) == False:
-        resp = int(resp)
-    await ctx.send(resp)
-
 
 #  calculo con deteccion de signo
 
@@ -97,11 +62,14 @@ async def calcula(ctx,operacion):
     p = "abierto"
     numeros = [0,1,2,3,4,5,6,7,8,9]
     signos = ["+","-","*","/","÷","**","^"]
-    puntuacion = [".",","]
     operacion = str(operacion)
     operacion = list(operacion)
     print(operacion)
+
     for n in operacion:
+        if n == ",":
+            n = "."
+
         if p == "abierto":
             if n not in signos:
                 primer_numero.append(n)
@@ -110,6 +78,7 @@ async def calcula(ctx,operacion):
                 signo = n
         if p == "cerrado" and n not in signos:
             segundo_numero.append(n)
+
     print(primer_numero)
     print(signo)
     print(segundo_numero)
@@ -126,13 +95,10 @@ async def calcula(ctx,operacion):
     segundo_numero = ""
     segundo_numero = list(segundo_numero)
 
-
     #  variables ready
 
     var1 = float(var1)
     var2 = float(var2)
-
-
 
 
     #  SUMA
@@ -140,7 +106,7 @@ async def calcula(ctx,operacion):
         respuesta = var1 + var2
         if comprobacion_numero(respuesta) == False:
             respuesta = int(respuesta)
-            print(respuesta)
+        respuesta = str(respuesta)
         await ctx.send(respuesta)
 
     #  RESTA
@@ -148,6 +114,7 @@ async def calcula(ctx,operacion):
         respuesta = var1 - var2
         if comprobacion_numero(respuesta) == False:
             respuesta = int(respuesta)
+        respuesta = str(respuesta)
         await ctx.send(respuesta)
 
     #  MULTIPLICA
@@ -155,6 +122,7 @@ async def calcula(ctx,operacion):
         respuesta = var1 * var2
         if comprobacion_numero(respuesta) == False:
             respuesta = int(respuesta)
+        respuesta = str(respuesta)
         await ctx.send(respuesta)
 
     #  DIVIDE
@@ -162,18 +130,20 @@ async def calcula(ctx,operacion):
         try:
             respuesta = var1 / var2
         except ZeroDivisionError:
-            await ctx.send("Lo sentimos, no es posible el calculo")
+            await ctx.send("no se puede dividir por cero")
             calculo_error = True
         if calculo_error == False:
             if comprobacion_numero(respuesta) == False:
                 respuesta = int(respuesta)
+            respuesta = str(respuesta)
             await ctx.send(respuesta)
 
     #  ELEVA
     elif signo == "**" or signo == "^":
         respuesta = var1 ** var2
         if comprobacion_numero(respuesta) == False:
-            respuesta = int(respuesta)
+            respuesta = str(respuesta)
+        respuesta = str(respuesta)
         await ctx.send(respuesta)
 
 
@@ -189,23 +159,17 @@ async def cachipun(ctx,tirada1):
     tirbot = choice(respuestas)
     tirada1 = tirada1.lower()
 
-    if bool(tirada1) == True:
-        if tirada1 == "tijeras":
-            tirada1 = "tijera"
+    if tirada1 in respuestas:
+        await ctx.send(tirbot)
 
-        if tirada1 in respuestas:
-            await ctx.send(tirbot)
-
-            if tirada1 == tirbot:
-                await ctx.send("Empate")    
-            elif tirada1 == "piedra" and tirbot == "papel" or tirada1 == "papel"and tirbot == "tijera" or tirada1 == "tijera" and tirbot == "piedra":
-                await ctx.send("jaja izi")
-            else:
-                await ctx.send("me falta practica :(")
+        if tirada1 == tirbot:
+            await ctx.send("Empate")    
+        elif tirada1 == "piedra" and tirbot == "papel" or tirada1 == "papel"and tirbot == "tijera" or tirada1 == "tijera" and tirbot == "piedra":
+            await ctx.send("jaja izi")
         else:
-            await ctx.send("parece que no sabes jugar XD")
+            await ctx.send("me falta practica :(")
     else:
-        await ctx.send("falto tu jugada")
+        await ctx.send("o escribise mal o no sabes jugar xD")
 
 
 
@@ -324,6 +288,7 @@ async def scanurl(ctx, link):
     info6_1 = "".join(nombreASN)
     info6_1 = info6_1.replace("</td>","")     #  nombre sistema autónomo
 
+    
     await ctx.send("Web: "+info1+"\n"
     "Encontrado en listas negras: "+info2+"\n"
     "Registro de dominio: "+info3+"\n"
@@ -359,8 +324,8 @@ async def clima(ctx,consulta):
     consulta = consulta.lower()
     await ctx.send("Lo sentimos esta opcion esta fuera de servicio :(")
 """
-    access_key = ""
-    params = {'access_key':"" ,"query": "Santiago",}
+    access_key = "5326fd21a998890875d1c2956deb62d3"
+    params = {'access_key':"5326fd21a998890875d1c2956deb62d3" ,"query": "Santiago",}
 
     for key, value in params.items():
         if key == "query":
@@ -379,6 +344,57 @@ async def clima(ctx,consulta):
     await ctx.send("Pais: "+pais+"\nRegion: "+region+"\nHora: "+hora+"\nTemperatura: "+grados+"°C\nHumedad: "+humedad+"%"+"\nViento: "+wind+"Km/h")
 """
 
+#  Comando ping
+@bot.command()
+async def ping(ctx):
+    tiempo_inicio = time.time() * 1000
+    mensaje = await ctx.send("pong")
+    tiempo_final = time.time() * 1000
+    ms = tiempo_final - tiempo_inicio
+    ms = str(ms)
+    await ctx.send(ms[0:3] + "ms(latencia del bot)")
+
+
+#   comando para ver el nombre de los servidores en donde esta el bot
+@bot.command()
+async def mb(ctx,llave):
+    if llave == "%":
+        server_list = []
+        for guild in bot.guilds:
+            server_list.append(guild)
+    print(len(server_list))
+            
+intents = discord.Intents.default()
+intents.members = True
+
+#   intento de bloc de notas xd
+
+@bot.command()
+async def bloc(ctx, opcion, *args):
+    mensaje = ctx.message
+    nombre_usuario_mensaje = mensaje.author
+    print(nombre_usuario_mensaje)
+    nombre_usuario_mensaje = str(nombre_usuario_mensaje)
+    lista_temporal = []
+    for n in args:
+        lista_temporal.append(n)
+        words = " ".join(lista_temporal)
+
+    if opcion == "w":
+        libreta = open("libretas_users/"+nombre_usuario_mensaje+".txt", "w")
+        libreta.write(words)
+        await ctx.send("se ha guardado en tus notas")
+    elif opcion == "r":
+        archivo_texto = open("libretas_users/"+nombre_usuario_mensaje+".txt","r")
+        libreta = archivo_texto.read()
+        await ctx.send("tus notas: "
+        +libreta)
+    elif opcion == "d":
+        os.remove("libretas_users/"+nombre_usuario_mensaje+".txt")
+        await ctx.send("tus notas han sido borradas")
+    else:
+        await ctx.send("opcion r leer, opcion w escribir, opcion d para borrar tus notas")
+
 #  COMANDO AYUDA
 
 @bot.command()
@@ -386,17 +402,16 @@ async def ayuda(ctx):
     await ctx.send("""```
     Todos los comandos con ejemplos
 
-    c!suma "1 1"
-    c!resta "5 2"
-    c!multiplica "3 5"
-    c!divide "10 2"
-    c!eleva "2 3"
-    c!calcula "10/3" (este comando detecta el simbolo)
-    c!cachipun "piedra"  (el legendario juego de piedra papel o tijera)
-    c!hash "hola que tal 123" (genera un hash sha256 en base a lo que ingresaste)
-    c!scanurl "netflix.com" (informacion sobre el enlace)
-    c!traduce "hola buenas mañanas" (traduce tu texto a ingles, proximamente mas idiomas)
-    c!busca "palabra o frase"  (proximamente)
-    c!clima "santiago" (funcionalidad suspendida)```""")
+    c!ping                          latencia del bot
+    c!calcula 10/3                  este comando detecta el simbolo
+    c!cachipun piedra               el legendario juego de piedra papel o tijera
+    c!hash hola que tal 123         genera un hash sha256 en base a lo que ingresaste
+    c!scanurl netflix.com           informacion sobre el enlace
+    c!traduce hola buenas mañanas   traduce tu texto a ingles, proximamente mas idiomas
+    c!bloc w hola123                recuerda anteponer una w si quieres guardar, r para leer y d borrar
+    c!busca palabra o frase         proximamente
+    c!clima santiago (funcionalidad suspendida)```""")
 
+second = time.time()
+print(second - first)
 bot.run(TOKEN)
